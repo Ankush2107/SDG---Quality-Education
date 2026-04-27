@@ -31,12 +31,21 @@ const app = express();
 
 // Security and utility middleware
 app.use(helmet());
-const allowedOrigin = process.env.CLIENT_URL 
-  ? process.env.CLIENT_URL.replace(/\/$/, '') 
-  : 'http://localhost:5173';
+const clientUrl = process.env.CLIENT_URL;
+const allowedOrigins = [
+  'http://localhost:5173',
+  clientUrl,
+  clientUrl ? clientUrl.replace(/\/$/, '') : null
+].filter(Boolean);
 
 app.use(cors({
-  origin: allowedOrigin,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
