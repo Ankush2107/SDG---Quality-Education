@@ -218,6 +218,24 @@ Notice that `font-size` becomes `fontSize` — CSS property names with hyphens a
 
 ---
 
+---
+## 🗳️ ZOOM POLL 1 — JSX Rules Check
+> ⏱️ **Share this poll:** After Slide 5 (5 Golden Rules of JSX). Tests core rule recall.
+
+**Question: Which of the following is VALID JSX?**
+*(Single Choice)*
+
+A) `<div class="card">Hello</div>`
+B) `<img src="photo.jpg">`
+C) `<div style={{ color: 'red', fontSize: '16px' }}>Hello</div>`
+D) `return (<h1>Title</h1><p>Text</p>)`
+
+✅ **Correct Answer:** C
+
+> 💬 **Instructor note:** Walk through each wrong answer — A uses `class` (should be `className`), B is missing self-closing `/`, D has two sibling root elements (needs a `<>` Fragment wrapper).
+
+---
+
 ## 📌 Slide 6 — Components: The Building Blocks
 
 ### Definition
@@ -329,6 +347,24 @@ Props are **READ-ONLY**. A child component can use props to display data, but it
 
 ---
 
+---
+## 🗳️ ZOOM POLL 2 — Props vs State
+> ⏱️ **Share this poll:** After Slide 7 (Props). Reinforces the key Props rule before moving to State.
+
+**Question: A `FeatureCard` component receives a `title` prop from `LandingPage`. What can `FeatureCard` do with this prop?**
+*(Single Choice)*
+
+A) Display it in JSX — that's it. Props are read-only inside the child.
+B) Modify it directly using `title = "New Title"` — React will re-render
+C) Store it in localStorage so it persists across sessions
+D) Pass it back to the parent using `return title` inside the component
+
+✅ **Correct Answer:** A
+
+> 💬 **Instructor note:** Emphasize the stamp-machine analogy — the machine (component) uses the ink (prop) but can't change what ink is available. If the child needs to communicate back up, the parent must pass a callback function as a prop.
+
+---
+
 ## 📌 Slide 8 — State: Making Components Interactive
 
 ### Definition
@@ -404,6 +440,24 @@ Without controlled inputs (called "uncontrolled"), the browser DOM manages the i
 
 ---
 
+---
+## 🗳️ ZOOM POLL 3 — useState Deep Dive
+> ⏱️ **Share this poll:** After Slide 8 (State section). Core concept check before moving to routing.
+
+**Question: We have `const [menuOpen, setMenuOpen] = useState(false)`. A user clicks the hamburger button. Which line correctly toggles the menu?**
+*(Single Choice)*
+
+A) `menuOpen = true`
+B) `setMenuOpen(!menuOpen)`
+C) `useState(!menuOpen)`
+D) `menuOpen.toggle()`
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Explain why A fails — directly mutating state doesn't trigger a re-render. React watches the setter function, not the variable. C and D don't exist — `useState` is called only at declaration, not to update.
+
+---
+
 ## 📌 Slide 9 — React Router: Navigation Without Reload
 
 ### The Problem With Normal Links
@@ -476,6 +530,24 @@ function App() {
 **`<Routes>`** — The container that holds all `<Route>` definitions. Renders only the FIRST matching route.
 
 **`<Route>`** — Maps a URL path to a component. When the URL matches `path`, it renders the `element`.
+
+---
+
+---
+## 🗳️ ZOOM POLL 4 — React Router vs HTML Links
+> ⏱️ **Share this poll:** After Slide 9 (React Router). Tests the critical SPA navigation concept.
+
+**Question: In our Navbar, which code should we use to link to the About page?**
+*(Single Choice)*
+
+A) `<a href="/about">About</a>`
+B) `<Link to="/about">About</Link>`
+C) `<button onClick={() => window.location.href='/about'}>About</button>`
+D) `<Route path="/about" />`
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** A causes a full page reload — the browser sends a new HTTP request and reloads the entire React app from scratch, losing all state. B intercepts the click and just swaps which component renders — instant, no reload. C also causes a full reload. D is for defining routes, not navigating.
 
 ---
 

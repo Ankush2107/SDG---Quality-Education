@@ -124,6 +124,24 @@ npm install express-async-errors  # Async error forwarding
 
 ---
 
+---
+## 🗳️ ZOOM POLL 1 — Node.js Fundamentals
+> ⏱️ **Share this poll:** After Slide 2 (Node.js section). Opens up the backend world.
+
+**Question: Before Node.js existed, JavaScript could only run in one place. Where was that?**
+*(Single Choice)*
+
+A) On a server, processing database requests
+B) Inside the browser — it was exclusively a client-side language
+C) Inside mobile apps as the native runtime
+D) In terminal scripts on Linux servers
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Node.js was released in 2009 and changed everything — suddenly one language (JavaScript) could run both in the browser AND on the server. This is the key reason the MERN stack exists. Without Node.js, we'd need Python or Java for the backend.
+
+---
+
 ## 📌 Slide 3 — Express.js: Building the Web Server
 
 ### Definition
@@ -342,6 +360,24 @@ Reads the `Cookie` header from incoming requests and parses it into a JavaScript
 
 ---
 
+---
+## 🗳️ ZOOM POLL 2 — Middleware Pipeline
+> ⏱️ **Share this poll:** After Slide 5 (Middleware section). Airport analogy comprehension check.
+
+**Question: A request arrives at our Express server. `express.json()` middleware runs but `protect()` middleware does NOT run on this route. What is the most likely reason?**
+*(Single Choice)*
+
+A) The request body contains invalid JSON
+B) This is a public route (like `POST /api/auth/register`) — `protect()` is only added to protected routes
+C) The server hasn't been restarted after adding `protect()`
+D) `express.json()` and `protect()` cannot run on the same route
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Show the route file — `router.post('/register', registerUser)` has no `protect` middleware, but `router.get('/me', protect, getMe)` does. Middleware is additive and route-specific. Global middleware (like `express.json()`) runs on ALL routes.
+
+---
+
 ## 📌 Slide 6 — Backend Folder Structure (MVC Pattern)
 
 ### Definition: MVC Architecture
@@ -479,6 +515,24 @@ export default router;
 | POST | `/api/admin/resources` | Add resource | 👑 Admin |
 | PUT | `/api/admin/resources/:id` | Edit resource | 👑 Admin |
 | DELETE | `/api/admin/resources/:id` | Delete resource | 👑 Admin |
+
+---
+
+---
+## 🗳️ ZOOM POLL 3 — HTTP Methods
+> ⏱️ **Share this poll:** After Slide 7 (Routes: Defining the API). Core REST vocabulary check.
+
+**Question: A student marks a roadmap step as complete. Which HTTP method should the frontend use to send this update to the backend?**
+*(Single Choice)*
+
+A) `GET /api/progress/step` — to retrieve the current step status
+B) `POST /api/progress/step` — to create a new step completion record
+C) `PUT /api/progress/step` — to update an existing progress record
+D) `DELETE /api/progress/step` — to remove the incomplete step
+
+✅ **Correct Answer:** C
+
+> 💬 **Instructor note:** Reinforce: GET = read, POST = create, PUT = update, DELETE = remove. The step already exists in the Progress document — we're updating its `completedSteps` array, not creating a new record. POST would imply creating something new.
 
 ---
 
@@ -706,6 +760,24 @@ export const generateToken = (res, userId) => {
 | Security rating | 🔒 Higher | 🔓 Lower |
 
 HTTP-only cookies cannot be read by any JavaScript running on the page — even malicious scripts injected by XSS attacks. This makes JWT in HTTP-only cookies significantly more secure than localStorage.
+
+---
+
+---
+## 🗳️ ZOOM POLL 4 — JWT Security
+> ⏱️ **Share this poll:** After Slide 10 (JWT Authentication Flow). Critical security concept.
+
+**Question: Why do we store the JWT in an HTTP-only cookie instead of `localStorage`?**
+*(Single Choice)*
+
+A) HTTP-only cookies are faster to read than localStorage
+B) localStorage has a 5MB size limit but JWTs can be larger
+C) HTTP-only cookies cannot be accessed by JavaScript — they're invisible to XSS attacks that try to steal tokens
+D) Cookies automatically refresh when they expire; localStorage values don't
+
+✅ **Correct Answer:** C
+
+> 💬 **Instructor note:** XSS (Cross-Site Scripting) is when malicious JavaScript gets injected into a page. If the JWT is in localStorage, that script can read it with `localStorage.getItem('token')` and steal it. An HTTP-only cookie is invisible to ALL JavaScript — even malicious scripts can't read it.
 
 ---
 

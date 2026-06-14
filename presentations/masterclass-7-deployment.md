@@ -73,6 +73,24 @@ Internet (Global)
 
 ---
 
+---
+## 🗳️ ZOOM POLL 1 — Why Two Platforms?
+> ⏱️ **Share this poll:** After Slide 2 (Deployment Architecture). Sets up the deployment mental model.
+
+**Question: We deploy the React frontend to Vercel and the Node.js backend to Render. Why don't we deploy both to the same place?**
+*(Single Choice)*
+
+A) It's a legal requirement — frontends and backends must be on different servers by law
+B) Vercel specializes in static/CDN hosting for frontends; Render specializes in running persistent Node.js server processes — each is optimized for its use case
+C) They can't communicate if they're on the same server
+D) Deploying to different platforms saves money compared to using one platform for everything
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Vercel serves static files from 100+ global CDN locations instantly. Render keeps a Node.js process running 24/7. These are fundamentally different requirements. Using a file host for a server would fail; using a server platform for static files would be wasteful.
+
+---
+
 ## 📌 Slide 3 — Preparing the Backend for Deployment
 
 ### File: `backend/package.json` — Node Version Specification
@@ -194,6 +212,24 @@ This tells Axios where to send all API requests in production. It must point to 
 
 ---
 
+---
+## 🗳️ ZOOM POLL 2 — The vercel.json Mystery
+> ⏱️ **Share this poll:** After Slide 4 (vercel.json). Tests the SPA routing problem understanding.
+
+**Question: A user bookmarks `https://yourapp.vercel.app/roadmap` and visits it later. WITHOUT `vercel.json`, what happens?**
+*(Single Choice)*
+
+A) React Router reads the URL and renders the Roadmap page correctly
+B) Vercel looks for `dist/roadmap.html` — it doesn't exist — returns a 404 Not Found error
+C) The user is automatically redirected to the homepage `/`
+D) Vercel prompts the user to log in before accessing the page
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** The entire React app is in ONE file: `dist/index.html`. Vercel doesn't know that. `vercel.json` tells Vercel: "No matter what URL arrives, serve `index.html` and let React Router figure it out." Without it, every direct URL except `/` returns 404.
+
+---
+
 ## 📌 Slide 5 — The CORS Challenge: Connecting Two Different Domains
 
 ### Definition
@@ -253,6 +289,24 @@ These look identical to humans but are technically different strings. If your `C
 
 ---
 
+---
+## 🗳️ ZOOM POLL 3 — CORS Enforcement
+> ⏱️ **Share this poll:** After Slide 5 (CORS section). Addresses the most common misconception about CORS.
+
+**Question: You get a CORS error in the browser when the frontend calls the backend. Your friend opens the same API URL in Postman and it works perfectly. Why?**
+*(Single Choice)*
+
+A) Postman uses a different port that is whitelisted in CORS
+B) CORS is enforced by the BROWSER, not the server — Postman and curl bypass it because they're not browsers
+C) The API key is automatically included in Postman requests but not browser requests
+D) Postman caches the CORS approval from a previous successful request
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** This is the key CORS insight. The server just declares which origins are allowed. The BROWSER reads that declaration and decides whether to let JavaScript access the response. Tools like Postman, curl, and server-to-server calls are never subject to CORS — it's purely a browser security feature.
+
+---
+
 ## 📌 Slide 6 — The Cross-Domain Cookie Problem
 
 ### Why Cookies are Harder in Production
@@ -301,6 +355,24 @@ If after deployment, login appears to succeed but then every page shows the user
 3. If it exists but gets ignored: check that Axios has `withCredentials: true`
 4. If it doesn't exist: check that `secure: true` and `sameSite: 'none'` are set in the backend
 5. Check that the backend is HTTPS (Render provides HTTPS by default on `.onrender.com` URLs)
+
+---
+
+---
+## 🗳️ ZOOM POLL 4 — Cross-Domain Cookies
+> ⏱️ **Share this poll:** After Slide 6 (Cross-Domain Cookie Problem). The trickiest production config check.
+
+**Question: After deploying, login appears to work but every page refresh shows the user as logged out. The JWT cookie exists in DevTools but is being ignored. Which setting is most likely the culprit?**
+*(Single Choice)*
+
+A) The `JWT_SECRET` on Render is different from the one used during development
+B) Axios is missing `withCredentials: true` — so the browser never sends the cookie with API requests
+C) The `VITE_API_URL` points to the wrong Render URL
+D) MongoDB Atlas is not allowing connections from Render's IP address
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Without `withCredentials: true`, Axios never sends cookies cross-domain — even if the cookie exists in the browser. Check DevTools → Network → any API request → Request Headers → look for the `Cookie` header. If it's missing, `withCredentials` is the issue.
 
 ---
 

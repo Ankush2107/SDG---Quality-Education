@@ -71,6 +71,24 @@ The interceptors are the key reason we use Axios — they let us add global beha
 
 ---
 
+---
+## 🗳️ ZOOM POLL 1 — How Frontend & Backend Communicate
+> ⏱️ **Share this poll:** After Slide 2 (Communication Pattern). Checks the big-picture flow understanding.
+
+**Question: A user clicks "Login" on the React app. Put these events in the correct order:**
+*(Single Choice)*
+
+A) Axios sends HTTP request → Express validates → JWT cookie is set → React updates state → User sees dashboard
+B) React updates state → Axios sends request → JWT is created → MongoDB is queried → User sees dashboard
+C) MongoDB stores the token → Express sends it to React → Axios receives it → Dashboard renders
+D) JWT is created in React → Sent to Express for verification → MongoDB confirms → Dashboard renders
+
+✅ **Correct Answer:** A
+
+> 💬 **Instructor note:** Walk through the 10-step flow from Slide 2 together. This is the mental model every full-stack developer needs. Every feature they build for the rest of their career follows this exact same pattern.
+
+---
+
 ## 📌 Slide 3 — Configuring Axios: The Shared API Client
 
 ### File: `frontend/src/utils/axios.js`
@@ -145,6 +163,24 @@ VITE_API_URL=https://your-skillpath-backend.onrender.com/api
 ```
 
 In Vite, environment variables must start with `VITE_` to be accessible in the React code via `import.meta.env.VITE_API_URL`. They are **baked into the JavaScript bundle at build time** — this means changing the variable on Vercel requires triggering a new build (it's not read at runtime).
+
+---
+
+---
+## 🗳️ ZOOM POLL 2 — Axios Interceptors
+> ⏱️ **Share this poll:** After Slide 3 (Axios setup). Tests the key advantage of using interceptors.
+
+**Question: Our Axios instance has a response interceptor that redirects to `/login` on a 401 error. Without this interceptor, what would we need to do?**
+*(Single Choice)*
+
+A) Nothing — browsers automatically redirect to login when a 401 is received
+B) Add a 401 check inside EVERY hook and component that makes an API call
+C) Set a global variable `isLoggedIn = false` and check it on every page
+D) The JWT cookie would automatically handle the redirect
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Count the API calls in the app — `useAuth`, `useRoadmap`, `useChat`, `useProgress`, projects, resources, profile, admin — that's at least 15 separate places. The interceptor handles ALL of them in one 5-line block.
 
 ---
 
@@ -467,6 +503,24 @@ function RoadmapPage() {
 
 ---
 
+---
+## 🗳️ ZOOM POLL 3 — Custom Hooks
+> ⏱️ **Share this poll:** After Slide 6 (useRoadmap hook). Tests the purpose of custom hooks.
+
+**Question: `RoadmapPage` uses `const { roadmap, markStep, getLesson } = useRoadmap()`. What is the main benefit of this pattern?**
+*(Single Choice)*
+
+A) It makes the code run faster because hooks are compiled by React
+B) `RoadmapPage` stays clean with only JSX — all the loading/error/API logic is hidden inside the hook
+C) It prevents other pages from accidentally accessing the roadmap data
+D) Custom hooks are required by React Router to work with protected routes
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Show the before/after from Slide 4 — without hooks the component was 150+ lines of state and API logic. With hooks, `RoadmapPage` has 3 lines of data access and pure, clean JSX. This is the "separation of concerns" principle.
+
+---
+
 ## 📌 Slide 7 — The `useChat` Hook
 
 ### File: `frontend/src/hooks/useChat.js`
@@ -716,6 +770,24 @@ function AdminDashboardPage() {
   );
 }
 ```
+
+---
+
+---
+## 🗳️ ZOOM POLL 4 — End-to-End Wiring
+> ⏱️ **Share this poll:** After Slide 9 (Wiring Remaining Pages). Tests the full-stack integration understanding.
+
+**Question: After MC6 wiring, a student completes onboarding. Their profile + roadmap now exist in MongoDB. The next time they open the app, how does React know to show their roadmap data?**
+*(Single Choice)*
+
+A) React saves the roadmap to `localStorage` during onboarding and reads it on startup
+B) On app load, `AuthContext` verifies the JWT cookie, `useRoadmap` calls `GET /api/roadmaps/me`, the backend reads MongoDB, and returns the data to React
+C) The browser caches the roadmap automatically after the first API call
+D) The roadmap is embedded inside the JWT token and decoded on every page load
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Trace the full flow together: app loads → `verifyAuth()` confirms JWT → user state set → `RoadmapPage` mounts → `useRoadmap` fires `useEffect` → `GET /api/roadmaps/me` → backend reads MongoDB → JSON roadmap returned → React state updated → roadmap renders. This is the complete wiring.
 
 ---
 

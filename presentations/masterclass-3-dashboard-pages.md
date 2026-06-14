@@ -90,6 +90,24 @@ const [roadmap, setRoadmap] = useState({
 
 ---
 
+---
+## 🗳️ ZOOM POLL 1 — Dashboard State Design
+> ⏱️ **Share this poll:** After Slide 2 (Dashboard Page). Tests understanding of state before diving deeper.
+
+**Question: The Dashboard shows "67% complete" and "5-day streak". In MC3 these are hardcoded. In MC6, where will this data actually come from?**
+*(Single Choice)*
+
+A) The browser's `localStorage` — stored from the last session
+B) The React component itself calculates it from the `user` object in `AuthContext`
+C) An API call to the backend, which reads the user's `Progress` document from MongoDB
+D) A prop passed down from `App.jsx` when the app first loads
+
+✅ **Correct Answer:** C
+
+> 💬 **Instructor note:** This is a great moment to preview the MC6 payoff — "Right now it's fake. In MC6, every number on this dashboard will be real, live data from YOUR database."
+
+---
+
 ## 📌 Slide 3 — The Roadmap Page
 
 ### File: `frontend/src/pages/RoadmapPage.jsx`
@@ -293,6 +311,24 @@ const passed = score >= 2; // 2/3 or 3/3 = pass (66%+)
 
 ---
 
+---
+## 🗳️ ZOOM POLL 2 — Quiz State Logic
+> ⏱️ **Share this poll:** After Slide 4 (QuizModal). Tests the state machine pattern for the quiz.
+
+**Question: A student answers Question 2 of 3 incorrectly. `score` is currently 1. What happens next in the QuizModal?**
+*(Single Choice)*
+
+A) The quiz ends immediately with a fail result
+B) The wrong option turns red, the correct option turns green, an explanation shows, and a "Next Question" button appears
+C) The score resets to 0 and the quiz restarts from Question 1
+D) The modal closes and the student is sent back to the roadmap
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Walk through the state flow: `setSelectedAnswer(index)` → `setShowResult(true)` → UI shows colors + explanation → student clicks "Next" → `setCurrentQuestion(2)` → `setSelectedAnswer(null)` → `setShowResult(false)`. This is the state machine pattern.
+
+---
+
 ## 📌 Slide 5 — The AI Chat Page
 
 ### File: `frontend/src/pages/ChatPage.jsx`
@@ -392,6 +428,24 @@ useEffect(() => {
 
 **`useRef` deep dive:**
 `useRef` creates a **mutable reference** to a DOM element. Unlike state, changing a `ref` does NOT cause a re-render. Here, we use it to get a direct reference to the invisible `<div>` at the bottom of the chat, then call `.scrollIntoView()` on it to scroll the chat window down.
+
+---
+
+---
+## 🗳️ ZOOM POLL 3 — Optimistic UI
+> ⏱️ **Share this poll:** After Slide 5 (Chat Page — Optimistic UI section). Core UX pattern check.
+
+**Question: In our ChatPage, a user clicks "Send". Their message appears IMMEDIATELY in the chat BEFORE the AI responds. This pattern is called Optimistic UI. What is the main benefit?**
+*(Single Choice)*
+
+A) It reduces server costs because fewer API calls are made
+B) The app FEELS instant and responsive — users see their action reflected immediately without waiting
+C) It prevents the AI from giving wrong answers by checking the message first
+D) It automatically retries failed messages without the user knowing
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Demo the difference — without optimistic UI there's an awkward 1.5-second pause after clicking send where nothing happens. With it, the message appears instantly and the typing indicator shows — the app feels alive.
 
 ---
 
@@ -628,6 +682,24 @@ const [resourceForm, setResourceForm] = useState({
   title: '', description: '', url: '', category: '', type: 'article', difficulty: 'beginner', tags: []
 });
 ```
+
+---
+
+---
+## 🗳️ ZOOM POLL 4 — Role-Based Access
+> ⏱️ **Share this poll:** After Slide 9 (Admin Pages). Tests the AdminRoute concept.
+
+**Question: A regular user (role: "user") is logged in and types `/admin` in the browser. What happens?**
+*(Single Choice)*
+
+A) They see the Admin Dashboard — any logged-in user can access admin pages
+B) The page shows a blank white screen with no error
+C) `AdminRoute` checks `user.role`, finds it's not 'admin', and redirects to `/dashboard`
+D) The backend blocks the request and returns a 403 Forbidden error
+
+✅ **Correct Answer:** C
+
+> 💬 **Instructor note:** Clarify that this is the FRONTEND guard. The backend ALSO has `admin` middleware protecting admin API routes. Both layers work together. Even if someone bypasses the frontend guard, the backend will reject their API calls.
 
 ---
 

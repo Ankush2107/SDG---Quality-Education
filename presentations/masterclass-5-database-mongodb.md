@@ -63,6 +63,24 @@ After MC4, our backend accepts and processes API requests perfectly — but the 
 
 ---
 
+---
+## 🗳️ ZOOM POLL 1 — Why MongoDB?
+> ⏱️ **Share this poll:** After Slide 2 (SQL vs NoSQL comparison). Critical architectural decision check.
+
+**Question: In MongoDB, how would you store a user's roadmap with 8 steps?**
+*(Single Choice)*
+
+A) Create a separate `steps` table with a foreign key linking back to the `roadmaps` table — like SQL
+B) Embed the steps array directly inside the roadmap document as a nested JSON array
+C) Store each step as a separate collection with no relationship to the roadmap
+D) Store the steps as a comma-separated string in a single `steps` field
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** This is MongoDB's biggest advantage over SQL for our use case. Steps are always fetched WITH the roadmap — they're meaningless alone. Embedding means ONE database query gets both. In SQL you'd need a JOIN across two tables.
+
+---
+
 ## 📌 Slide 3 — MongoDB: Key Concepts with Real Examples
 
 ### The Vocabulary
@@ -145,6 +163,24 @@ Mongoose is like a **smart HR department** between your company (controllers) an
 | Manual error handling for duplicates | Automatic duplicate key error |
 | No pre-save hooks | `userSchema.pre('save', async function() { ... })` |
 | Manual ObjectId management | Automatic `_id` generation and reference population |
+
+---
+
+---
+## 🗳️ ZOOM POLL 2 — Mongoose Basics
+> ⏱️ **Share this poll:** After Slide 4 (Mongoose). Tests the ODM concept before schemas are introduced.
+
+**Question: What does Mongoose's schema validation actually prevent?**
+*(Single Choice)*
+
+A) SQL injection attacks on the database
+B) Saving a document to MongoDB that is missing required fields or has wrong data types
+C) Duplicate database connections being opened simultaneously
+D) Users from accessing the API without a valid JWT token
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Without Mongoose, MongoDB accepts ANY object you throw at it — even `{ banana: true }` into the users collection. Mongoose's schema defines the contract: if `email` is required and you try to save a user without one, Mongoose throws an error BEFORE the data reaches the database.
 
 ---
 
@@ -342,6 +378,24 @@ This is one of the most important design decisions in MongoDB schema design:
 - Users exist independently — you might fetch a user without needing their roadmap
 - Avoids storing a huge roadmap document inside every user document
 - Best rule: **reference if queried independently**
+
+---
+
+---
+## 🗳️ ZOOM POLL 3 — Embedded vs Referenced
+> ⏱️ **Share this poll:** After Slide 7 (Roadmap model — Embedded vs Referenced). Core MongoDB design decision.
+
+**Question: We embed steps INSIDE the Roadmap document instead of creating a separate `Steps` collection. Which reason best explains this decision?**
+*(Single Choice)*
+
+A) Embedded documents are always faster to save than referenced documents
+B) Steps are always loaded WITH the roadmap and are meaningless without it — embedding avoids a second database query
+C) MongoDB has a strict limit on the number of collections allowed per database
+D) The steps would take too much storage space in a separate collection
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** The golden rule: **"Embed if always fetched together, reference if queried independently."** A roadmap without its steps is useless. But a User can be fetched independently (for profile) without needing the roadmap. So User → Roadmap is referenced.
 
 ---
 
@@ -1101,6 +1155,27 @@ After registering a user and generating a roadmap:
 | 1️⃣2️⃣ | `backend/controllers/progressController.js` | `Progress.findOne()`, update `completedSteps[]`, `progress.updatePercent()`, `progress.save()` |
 | 1️⃣3️⃣ | `backend/controllers/chatController.js` | `ChatHistory.findOne()`, append messages, `aiService.chatWithAI()`, save |
 | 1️⃣4️⃣ | `backend/controllers/projectController.js` | `Profile.findOne()` for level, `aiService.generateProjectRecommendations()`, `SavedProject.create()` |
+
+---
+
+## 🗳️ ZOOM POLL 4 — Groq AI Integration
+> ⏱️ **Share this poll:** After Slide 13 (Groq AI Service). Tests understanding of the AI layer.
+
+**Question: The Groq API is "stateless" — every call starts fresh with no memory. How does our AI Chat remember previous messages?**
+*(Single Choice)*
+
+A) Groq automatically stores conversation history in its own database
+B) The frontend sends the entire conversation history with every new message via Axios
+C) We store the entire chat history in MongoDB and send ALL previous messages to Groq with every new API call
+D) JWT tokens contain the conversation history so Groq can decode it
+
+✅ **Correct Answer:** C
+
+> 💬 **Instructor note:** Show the code: `const messages = chatHistory.messages` and then spreading them into the Groq call: `[...messages, { role: 'user', content: newMessage }]`. Groq sees the full conversation every time — that's what makes it context-aware. Without this, every answer would be disconnected from the previous question.
+
+---
+
+## 📌 Slide 14 — AI Function 4: `generateProjectRecommendations(level)`, `SavedProject.create()` |
 | 1️⃣5️⃣ | `backend/controllers/resourceController.js` | `Resource.find()` with optional category filter |
 | 1️⃣6️⃣ | `backend/controllers/learningController.js` | `aiService.generateStepLesson()`, `aiService.generateStepQuiz()` |
 | 1️⃣7️⃣ | `backend/controllers/adminController.js` | `countDocuments()`, `User.find()`, Resource CRUD |

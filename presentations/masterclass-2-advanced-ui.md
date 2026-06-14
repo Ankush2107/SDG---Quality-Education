@@ -102,6 +102,24 @@ When a user clicks the theme toggle, we set `document.documentElement.setAttribu
 
 ---
 
+---
+## 🗳️ ZOOM POLL 1 — CSS Design System
+> ⏱️ **Share this poll:** After Slide 2 (Design System / CSS Variables). Core concept for the whole masterclass.
+
+**Question: Our entire app uses `--color-primary: #6C63FF`. If we want to change the brand color from purple to orange across EVERY component, how many files do we edit?**
+*(Single Choice)*
+
+A) Every component file that uses a button, card, or badge — could be 20+ files
+B) Just `index.css` — change the one `:root` variable and every component updates instantly
+C) We need to re-run `npm install` to reload the styles
+D) We change it in `App.jsx` and it propagates down through props
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** This is the single biggest "aha" moment of MC2. CSS Custom Properties are the foundation of scalable design. Demo it live in DevTools by changing `--color-primary` and watching the entire app shift color.
+
+---
+
 ## 📌 Slide 3 — The ThemeContext: Global Dark/Light Mode
 
 ### The Prop Drilling Problem
@@ -189,6 +207,24 @@ Similarly, `AuthContext` stores the globally logged-in **user object**. This mea
 - The `useEffect` with `[theme]` as its dependency array runs **every time `theme` changes**
 - It then updates the HTML attribute and saves to localStorage
 - Without `useEffect`, this side effect (touching the DOM/localStorage) would run during render, which React discourages
+
+---
+
+---
+## 🗳️ ZOOM POLL 2 — Context API vs Prop Drilling
+> ⏱️ **Share this poll:** After Slide 3 (ThemeContext). Tests understanding of WHY Context exists.
+
+**Question: The dark/light mode toggle is inside the Navbar. Without React Context, how would `Button.jsx` — nested deep inside the app — know the current theme?**
+*(Single Choice)*
+
+A) It would use `localStorage.getItem('sp-theme')` directly — no props needed
+B) The theme would be passed as a prop through every parent component all the way down — prop drilling
+C) React automatically shares all state between siblings and children
+D) The `Button` would fetch the theme from the backend API
+
+✅ **Correct Answer:** B
+
+> 💬 **Instructor note:** Act out prop drilling — "App gives theme to LandingPage, LandingPage passes to HeroSection, HeroSection passes to Button... every middle component has to carry a prop it doesn't even use." Context cuts this chain entirely.
 
 ---
 
@@ -417,6 +453,24 @@ Think of a hotel keycard system:
 
 ---
 
+---
+## 🗳️ ZOOM POLL 3 — Protected Routes
+> ⏱️ **Share this poll:** After Slide 6 (Protected Routes). Security-critical concept check.
+
+**Question: A user is NOT logged in. They type `/dashboard` directly into the browser address bar. What happens?**
+*(Single Choice)*
+
+A) The dashboard loads normally — the URL is public
+B) The browser shows a generic 403 Forbidden error page
+C) `ProtectedRoute` checks `user` from `AuthContext`, finds it null, and redirects to `/login`
+D) The backend rejects the page request with a 401 status
+
+✅ **Correct Answer:** C
+
+> 💬 **Instructor note:** Emphasize that this is ALL client-side — it's a UX guard. The real security is on the backend (JWT middleware on API endpoints). The ProtectedRoute just prevents showing a broken, empty dashboard UI to unauthenticated users.
+
+---
+
 ## 📌 Slide 7 — The Onboarding Flow: Multi-Step Form
 
 ### File: `frontend/src/pages/OnboardingPage.jsx`
@@ -561,6 +615,24 @@ The SVG arc animates from 0 (empty) to the actual percentage in 1 second when th
 .typing-dot:nth-child(3) { animation-delay: 0.32s; }
 ```
 Three dots bounce sequentially (like iMessage "...") to indicate the AI is "thinking". This gives users confidence the request is being processed.
+
+---
+
+---
+## 🗳️ ZOOM POLL 4 — useEffect Timing
+> ⏱️ **Share this poll:** After Slide 8 (Animations and Micro-Interactions). Tests the useEffect misconception from the Two Truths game.
+
+**Question: In `ThemeContext`, we have a `useEffect` that saves the theme to `localStorage` every time `theme` changes. When does this `useEffect` actually run?**
+*(Single Choice)*
+
+A) Before the component renders — so localStorage is updated before the UI appears
+B) Only once when the app first loads
+C) After the component renders, every time the `theme` state value changes
+D) Only when the user manually calls `toggleTheme()`
+
+✅ **Correct Answer:** C
+
+> 💬 **Instructor note:** This is one of the most misunderstood React concepts. useEffect fires AFTER rendering — never before. The `[theme]` dependency array means "run whenever `theme` changes". An empty `[]` means "run only once after first render".
 
 ---
 
