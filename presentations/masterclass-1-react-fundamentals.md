@@ -815,87 +815,636 @@ Create a dedicated branch:
 
 ## 📋 File Creation Flow — MC1 (Start Here, Follow This Order!)
 
-> **How to use this:** Create each file in the exact order listed below. Each step builds on the previous one. Don't skip ahead — files at the top are needed by files at the bottom.
+This section provides a clear, step-by-step walkthrough of the files you need to create, modify, or clean up during Masterclass 1. Click on the file name links to open the files directly on your screen.
 
 ---
 
-### 🟢 STEP 1 — Project Setup (Do this FIRST — everything else depends on it)
+### 🟢 STEP 1 — Project Setup & Boilerplate Cleanup (Do this FIRST)
 
-| Order | File / Action | Why This First? |
-|-------|--------------|-----------------|
-| 1️⃣ | Run `npm create vite@latest frontend -- --template react` | Creates the entire `frontend/` folder structure and all boilerplate files automatically |
-| 2️⃣ | Inside `frontend/`: run `npm install react-router-dom` | Adds React Router — needed before any routing code can be written |
+#### 1️⃣ Action: Initialize Vite React App & Install Packages
+- **Command:** Run the following commands in your terminal:
+  ```bash
+  npm create vite@latest frontend -- --template react
+  cd frontend
+  npm install
+  npm install react-router-dom
+  ```
+- **Instructor Note:** Explain that Vite is a modern build tool that starts up in under a second compared to the deprecated Create-React-App. Also explain that we install `react-router-dom` to support client-side single page app (SPA) routing.
+
+#### 2️⃣ Action: Delete Boilerplate Files
+To build a clean app from scratch, open and delete these boilerplate files inside the `frontend` folder:
+- **Delete:** `frontend/src/App.css` (we don't need default app styles)
+- **Delete:** `frontend/src/assets/react.svg` (we don't need default icons)
+- **Delete:** `frontend/public/vite.svg`
+- **Clean:** Open [frontend/src/index.css](file:///e:/SDG-Quality-Education/frontend/src/index.css) and delete all default CSS styles inside it. Copy and paste the core UI styles here so our components have clean layout classes.
 
 ---
 
 ### 🟡 STEP 2 — Entry Point (The App's "On Switch")
 
-| Order | File to Create | Why at This Stage? |
-|-------|---------------|-------------------|
-| 3️⃣ | `frontend/src/main.jsx` | The first JS file that runs — it connects React to the single `<div id="root">` in `index.html`. Must exist before anything renders. |
+#### 3️⃣ File: [frontend/src/main.jsx](file:///e:/SDG-Quality-Education/frontend/src/main.jsx)
+- **Action:** Open and modify the existing file.
+- **Instructor Note:** Explain that this is the entry point file. It connects the virtual DOM tree created by React to the real `<div id="root">` in `index.html`.
+- **Code to write:**
+```jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+```
 
 ---
 
 ### 🟠 STEP 3 — Layout Components (Shared across all pages — build once, use everywhere)
 
-> Build these BEFORE pages, because pages import and use them.
+#### 4️⃣ File: [frontend/src/components/layout/Navbar.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/layout/Navbar.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Explain `useState` state hook. We use `menuOpen` state to show/hide the hamburger navigation on mobile screens. Explain that `<NavLink>` is used instead of `<a>` to prevent page reloads and automatically apply active styles.
+- **Code to write:**
+```jsx
+import { Link, NavLink } from 'react-router-dom';
+import { useState } from 'react';
 
-| Order | File to Create | Why at This Stage? |
-|-------|---------------|-------------------|
-| 4️⃣ | `frontend/src/components/layout/Navbar.jsx` | Used on every page — must exist before any page that imports it |
-| 5️⃣ | `frontend/src/components/layout/Footer.jsx` | Used on LandingPage and AboutPage |
+function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <nav className="navbar">
+      <Link to="/" className="navbar-logo">
+        <span>SkillPath <span className="gradient-text">AI</span></span>
+      </Link>
+      <div className={`navbar-links ${menuOpen ? 'active' : ''}`}>
+        <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Home</NavLink>
+        <NavLink to="/about" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>About</NavLink>
+        <Link to="/login" className="nav-btn-login">Login</Link>
+        <Link to="/register" className="nav-btn-register">Get Started</Link>
+      </div>
+      <button className="navbar-hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+        {menuOpen ? '✕' : '☰'}
+      </button>
+    </nav>
+  );
+}
+
+export default Navbar;
+```
+
+#### 5️⃣ File: [frontend/src/components/layout/Footer.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/layout/Footer.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Explain that this is a simple static component using client-side `<Link>` components to navigate between the footer paths.
+- **Code to write:**
+```jsx
+import { Link } from 'react-router-dom';
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <div className="footer-content">
+        <p>© 2026 SkillPath AI. SDG 4: Quality Education.</p>
+        <div className="footer-links">
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+          <Link to="/login">Login</Link>
+          <Link to="/register">Register</Link>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export default Footer;
+```
 
 ---
 
-### 🔵 STEP 4 — Landing Page Components (Build before the Landing Page assembles them)
+### 🔵 STEP 4 — Landing Page Sections (Build components before assembling pages)
 
-| Order | File to Create | Why at This Stage? |
-|-------|---------------|-------------------|
-| 6️⃣ | `frontend/src/components/landing/HeroSection.jsx` | A section of LandingPage — build the parts before the whole |
-| 7️⃣ | `frontend/src/components/landing/FeatureCard.jsx` | Reusable card used 4 times inside LandingPage |
-| 8️⃣ | `frontend/src/components/landing/TestimonialSection.jsx` | Another section of LandingPage |
-| 9️⃣ | `frontend/src/components/landing/CTABanner.jsx` | The bottom banner section of LandingPage |
+#### 6️⃣ File: [frontend/src/components/landing/HeroSection.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/landing/HeroSection.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** This is the top banner section of the landing page. Point out the text alignment with UN SDG 4.
+- **Code to write:**
+```jsx
+import { Link } from 'react-router-dom';
+
+function HeroSection() {
+  return (
+    <section className="hero-section">
+      <h1>Personalized AI Roadmaps for <span className="gradient-text">Lifelong Learning</span></h1>
+      <p>Aligning with UN SDG 4 to make quality education and AI-guided learning free and accessible to all.</p>
+      <div className="hero-buttons">
+        <Link to="/register" className="btn btn-primary">Start Learning Free</Link>
+        <Link to="/about" className="btn btn-secondary">Learn More</Link>
+      </div>
+    </section>
+  );
+}
+
+export default HeroSection;
+```
+
+#### 7️⃣ File: [frontend/src/components/landing/FeatureCard.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/landing/FeatureCard.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Explain **Props destructuring** here. The card is a reusable blueprint. It does not hardcode data; it receives icon, title, description, and color dynamic props from the parent.
+- **Code to write:**
+```jsx
+function FeatureCard({ icon, title, description, color }) {
+  return (
+    <div className="feature-card" style={{ borderColor: color }}>
+      <div className="feature-icon" style={{ backgroundColor: `${color}15`, color: color }}>
+        {icon}
+      </div>
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
+  );
+}
+
+export default FeatureCard;
+```
+
+#### 8️⃣ File: [frontend/src/components/landing/TestimonialSection.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/landing/TestimonialSection.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Teach the use of `map()` to dynamically render lists of data. Remind students that React needs a unique `key` on mapped children.
+- **Code to write:**
+```jsx
+function TestimonialSection() {
+  const testimonials = [
+    { name: "Rahul S.", role: "Computer Science Student", quote: "The AI doubt assistant answered my coding queries at midnight instantly!" },
+    { name: "Priya M.", role: "Self-taught Developer", quote: "Following the personalized roadmap helped me build my first full-stack app." },
+    { name: "David K.", role: "High School Teacher", quote: "A wonderful resource for students who cannot afford expensive private tutors." }
+  ];
+
+  return (
+    <section className="testimonials-section">
+      <h2>What Our <span className="gradient-text">Students Say</span></h2>
+      <div className="testimonials-grid">
+        {testimonials.map((t, index) => (
+          <div key={index} className="testimonial-card">
+            <p className="quote">"{t.quote}"</p>
+            <h4 className="author">{t.name}</h4>
+            <p className="role">{t.role}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default TestimonialSection;
+```
+
+#### 9️⃣ File: [frontend/src/components/landing/CTABanner.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/landing/CTABanner.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** A bottom banner urging visitors to sign up. Uses simple layout wrapping with a button link.
+- **Code to write:**
+```jsx
+import { Link } from 'react-router-dom';
+
+function CTABanner() {
+  return (
+    <section className="cta-banner">
+      <h2>Ready to build your personalized skill path?</h2>
+      <p>Join thousands of students learning at their own pace with AI.</p>
+      <Link to="/register" className="btn btn-light">Get Started Now</Link>
+    </section>
+  );
+}
+
+export default CTABanner;
+```
 
 ---
 
-### 🟣 STEP 5 — Pages (Assemble all the components you just built)
+### 🟣 STEP 5 — Pages (Assemble components you just built)
 
-| Order | File to Create | Why at This Stage? |
-|-------|---------------|-------------------|
-| 🔟 | `frontend/src/pages/LandingPage.jsx` | Assembles: Navbar + HeroSection + FeatureCard (×4) + TestimonialSection + CTABanner + Footer |
-| 1️⃣1️⃣ | `frontend/src/pages/AboutPage.jsx` | Simple static page — uses Navbar and Footer |
-| 1️⃣2️⃣ | `frontend/src/pages/LoginPage.jsx` | Auth form page — uses `useState` for controlled inputs |
-| 1️⃣3️⃣ | `frontend/src/pages/RegisterPage.jsx` | Auth form page — similar structure to Login |
-| 1️⃣4️⃣ | `frontend/src/pages/NotFoundPage.jsx` | 404 catch-all — simplest page, just a heading and a link home |
+#### 🔟 File: [frontend/src/pages/LandingPage.jsx](file:///e:/SDG-Quality-Education/frontend/src/pages/LandingPage.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Explain **Component Composition**. Show how we import and orchestrate layout components and page-specific sections to build a structured layout.
+- **Code to write:**
+```jsx
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+import HeroSection from '../components/landing/HeroSection';
+import FeatureCard from '../components/landing/FeatureCard';
+import TestimonialSection from '../components/landing/TestimonialSection';
+import CTABanner from '../components/landing/CTABanner';
+
+const features = [
+  { icon: "🗺️", title: "AI Roadmap Generator", description: "Personalized learning path based on your goals and availability.", color: "#6C63FF" },
+  { icon: "🤖", title: "AI Doubt Assistant", description: "24/7 contextual chat tutor that answers coding queries instantly.", color: "#00D4AA" },
+  { icon: "💡", title: "Project Recommendations", description: "Tailored project ideas to practice what you learn.", color: "#FF6B6B" },
+  { icon: "📊", title: "Progress Tracker", description: "Keep track of learning milestones and maintain your streak.", color: "#FFD93D" }
+];
+
+function LandingPage() {
+  return (
+    <div className="page-container">
+      <Navbar />
+      <main>
+        <HeroSection />
+        <section className="features-section">
+          <h2 className="section-title">Why Use SkillPath AI?</h2>
+          <div className="features-grid">
+            {features.map((feature, index) => (
+              <FeatureCard
+                key={index}
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+                color={feature.color}
+              />
+            ))}
+          </div>
+        </section>
+        <TestimonialSection />
+        <CTABanner />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default LandingPage;
+```
+
+#### 1️⃣1️⃣ File: [frontend/src/pages/AboutPage.jsx](file:///e:/SDG-Quality-Education/frontend/src/pages/AboutPage.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Point out that this is a static informational page. It has no state of its own but reuses the global `Navbar` and `Footer` layout shells.
+- **Code to write:**
+```jsx
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+
+function AboutPage() {
+  return (
+    <div className="page-container">
+      <Navbar />
+      <main className="about-main">
+        <h1>Our Mission: <span className="gradient-text">Quality Education for All</span></h1>
+        <p className="about-intro">SkillPath AI directly addresses UN SDG 4 — Quality Education. We leverage advanced artificial intelligence to democratize education and build high-quality, personalized learning paths for everyone, everywhere.</p>
+        
+        <div className="about-grid">
+          <div className="about-card">
+            <h3>SDG 4 Alignment</h3>
+            <p>By providing free roadmap generation, instant 24/7 mentoring, and project planning, we remove financial and geographical barriers to expert tutoring.</p>
+          </div>
+          <div className="about-card">
+            <h3>Tech Stack</h3>
+            <p>Built using the MERN stack (MongoDB, Express, React, Node.js) and powered by the Groq AI API for lightning-fast roadmaps.</p>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default AboutPage;
+```
+
+#### 1️⃣2️⃣ File: [frontend/src/pages/LoginPage.jsx](file:///e:/SDG-Quality-Education/frontend/src/pages/LoginPage.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Explain **Controlled Inputs** and form submissions. The inputs bind their value to component state, syncing on every keystroke (`onChange`). We intercept form submission with `e.preventDefault()` to avoid a page reload.
+- **Code to write:**
+```jsx
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
+function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    setError('');
+    console.log('Logging in with:', { email, password });
+    // Note: In Masterclass 6, we connect this to the real Express backend auth API.
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Sign In to <span className="gradient-text">SkillPath AI</span></h2>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Email Address</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="show-hide-btn"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          <button type="submit" className="btn btn-primary auth-submit-btn">Sign In</button>
+        </form>
+        <p className="auth-redirect">
+          Don't have an account? <Link to="/register">Sign Up</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default LoginPage;
+```
+
+#### 1️⃣3️⃣ File: [frontend/src/pages/RegisterPage.jsx](file:///e:/SDG-Quality-Education/frontend/src/pages/RegisterPage.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Reinforce state concepts. Add form level validation checking password length before submission.
+- **Code to write:**
+```jsx
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
+function RegisterPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name || !email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+    setError('');
+    console.log('Registering user:', { name, email, password });
+    // Note: In Masterclass 6, we connect this to the real Express backend auth API.
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Create Your Account</h2>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Full Name</label>
+            <input
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Email Address</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="btn btn-primary auth-submit-btn">Get Started</button>
+        </form>
+        <p className="auth-redirect">
+          Already have an account? <Link to="/login">Sign In</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default RegisterPage;
+```
+
+#### 1️⃣4️⃣ File: [frontend/src/pages/NotFoundPage.jsx](file:///e:/SDG-Quality-Education/frontend/src/pages/NotFoundPage.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Renders a clean 404 page when the user lands on an unmatched route path.
+- **Code to write:**
+```jsx
+import { Link } from 'react-router-dom';
+
+function NotFoundPage() {
+  return (
+    <div className="not-found-container">
+      <h1>404 🔍</h1>
+      <h2>Page Not Found</h2>
+      <p>Sorry, the page you are looking for does not exist.</p>
+      <Link to="/" className="btn btn-primary">Go back home</Link>
+    </div>
+  );
+}
+
+export default NotFoundPage;
+```
 
 ---
 
 ### 🔴 STEP 6 — App Router (Connect everything together LAST)
 
-| Order | File to Create | Why This Last? |
-|-------|---------------|----------------|
-| 1️⃣5️⃣ | `frontend/src/App.jsx` | Imports ALL pages and defines ALL routes — can only be written after all pages exist |
+#### 1️⃣5️⃣ File: [frontend/src/App.jsx](file:///e:/SDG-Quality-Education/frontend/src/App.jsx)
+- **Action:** Open and modify the existing file.
+- **Instructor Note:** This is the application router. It connects page components to path routes. Explain that this MUST go last since it imports all pages. Walk through the wild-card fallback `path="*"` route at the bottom.
+- **Code to write:**
+```jsx
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
+import AboutPage from './pages/AboutPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import NotFoundPage from './pages/NotFoundPage';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+```
 
 ---
 
-### ✅ MC1 Creation Order — Quick Visual Summary
+### ✅ MC1 Creation Order — Quick Summary & Rule of Thumb
 
 ```
-1. Vite setup (npm command)
-2. npm install react-router-dom
-3. main.jsx              ← The app's ignition key
-4. Navbar.jsx            ← Layout — used everywhere
-5. Footer.jsx            ← Layout — used everywhere
-6. HeroSection.jsx       ← Landing page section
-7. FeatureCard.jsx       ← Reusable landing card
-8. TestimonialSection.jsx ← Landing page section
-9. CTABanner.jsx         ← Landing page section
-10. LandingPage.jsx      ← Assembles sections 6–9 + Navbar + Footer
-11. AboutPage.jsx        ← Static page with Navbar + Footer
-12. LoginPage.jsx        ← Auth form with useState
-13. RegisterPage.jsx     ← Auth form with useState
-14. NotFoundPage.jsx     ← 404 catch-all page
-15. App.jsx              ← Wires all pages to URL routes ← LAST ALWAYS
+1. Vite setup & npm packages
+2. Boilerplate cleanup (App.css, react.svg, etc.)
+3. index.css              ← Empty out / add starter CSS
+4. main.jsx              ← React mounting entrypoint
+5. Navbar.jsx            ← Shared Layout component
+6. Footer.jsx            ← Shared Layout component
+7. HeroSection.jsx       ← Section inside landing page
+8. FeatureCard.jsx       ← Card prop component inside landing
+9. TestimonialSection.jsx ← Section inside landing page
+10. CTABanner.jsx         ← Section inside landing page
+11. LandingPage.jsx      ← Assembles steps 5–10
+12. AboutPage.jsx        ← Static informational page
+13. LoginPage.jsx        ← useState controlled form
+14. RegisterPage.jsx     ← useState validation form
+15. NotFoundPage.jsx     ← Fallback Asterisk page
+16. App.jsx              ← Imports all and routes them (LAST ALWAYS)
 ```
 
-> 💡 **Golden Rule for MC1:** Build the **smallest, most reusable pieces first** (components), then the **pages that assemble them**, and **App.jsx always goes last** because it needs to import everything else.
+> 💡 **Golden Rule for MC1:** Build components first, page assemblies second, and write the App Router (`App.jsx`) last since it imports everything else.
+
+
+---
+
+## 📌 Slide 17 — Practical Assignment: Build a Contact Form Page
+
+### 🎯 The Goal
+Your assignment is to add a new public page to the application: a **Contact Us Page** (`ContactPage.jsx`). This page will feature a form that lets users type in their name, email, subject, and message. When they submit, the form must validate that all fields are filled, prevent page reload, and display a successful submission message.
+
+### 📚 Concepts You Will Practice
+1. **Routing:** Add a new route `/contact` to `App.jsx` and link to it from `Navbar.jsx` and `Footer.jsx`.
+2. **Component Reuse:** Wrap your contact page in the `Navbar` and `Footer` layout components.
+3. **Controlled Inputs:** Use `useState` to track input fields and keep React state synchronized with the form.
+4. **Event Handling:** Prevent default HTML form submission behavior using `e.preventDefault()`.
+
+---
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Create the Page Component
+Create a new file: `frontend/src/pages/ContactPage.jsx`.
+
+#### Step 2: Set Up Form State
+Inside `ContactPage.jsx`, initialize state variables for the inputs, errors, and success state.
+
+#### Step 3: Wire Controlled Inputs
+Create inputs for name, email, subject, and a `<textarea>` for the message. Tie each one's `value` to its corresponding state variable and update it via `onChange`.
+
+#### Step 4: Handle Submit
+Write a `handleSubmit(e)` function that calls `e.preventDefault()`, validates the inputs, sets success status, and resets the form.
+
+#### Step 5: Wire the Route
+Open `frontend/src/App.jsx`. Add a route for `/contact` and import the component. Then open `Navbar.jsx` and add a link to the contact page.
+
+---
+
+### 💻 Example Code Structure
+
+Here is a partial skeleton to get you started:
+
+```jsx
+// File: frontend/src/pages/ContactPage.jsx
+import { useState } from 'react';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+
+function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const { name, email, subject, message } = formData;
+    
+    // Simple validation
+    if (!name || !email || !subject || !message) {
+      setError('All fields are required!');
+      setSubmitted(false);
+      return;
+    }
+    
+    setError('');
+    setSubmitted(true);
+    console.log('Feedback submitted:', formData);
+    // Clear inputs after successful submission
+    setFormData({ name: '', email: '', subject: '', message: '' });
+  };
+
+  return (
+    <div className="app-container">
+      <Navbar />
+      <main className="contact-main">
+        <h1>Contact Us ✉️</h1>
+        {error && <div className="error-alert">{error}</div>}
+        {submitted && <div className="success-alert">Thank you! Your message has been sent.</div>}
+        
+        <form onSubmit={handleSubmit}>
+          <input 
+            type="text" 
+            placeholder="Your Name"
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+          />
+          <input 
+            type="email" 
+            placeholder="Your Email"
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+          />
+          <input 
+            type="text" 
+            placeholder="Subject"
+            value={formData.subject}
+            onChange={(e) => setFormData({...formData, subject: e.target.value})}
+          />
+          <textarea 
+            placeholder="Your Message"
+            value={formData.message}
+            onChange={(e) => setFormData({...formData, message: e.target.value})}
+          />
+          <button type="submit">Send Message</button>
+        </form>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default ContactPage;
+```

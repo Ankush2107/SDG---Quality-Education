@@ -833,3 +833,117 @@ TEST & SHIP:
 ```
 
 > 💡 **Golden Rule for MC7:** Deploy the **backend first** — you need the Render URL before you can configure the Vercel frontend's `VITE_API_URL`. Then deploy the frontend and use its Vercel URL to update the backend's `CLIENT_URL`. It's a two-step handshake between the two deployments.
+
+---
+
+## 📌 Slide 15 — Practical Assignment: Implement & Deploy an API Health Dashboard
+
+### 🎯 The Goal
+Your assignment is to implement and deploy a public **System Status / API Health Dashboard** (`/status`). This feature will query a backend route that checks database connectivity and returns server uptime. Students will practice coding, testing locally, pushing to Git, deploying, and whitelisting the CORS origin to ensure everything operates seamlessly in production.
+
+### 📚 Concepts You Will Practice
+1. **Full-Stack Connection:** Fetch status data from your Express API using Axios.
+2. **Production CORS & Whitelisting:** Verify that cross-origin requests function correctly between your live Vercel frontend and Render backend.
+3. **Deployment Lifecycle:** Manage the Git workflow (branching, staging, committing, pushing) to trigger automated cloud builds.
+
+---
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Create the Backend Endpoint
+In `backend/server.js`, add a new health status route. It should check if `mongoose.connection.readyState === 1` and return:
+- `{ status: "ok", dbConnected: true, uptime: process.uptime() }`
+
+#### Step 2: Create the Frontend Page Component
+Create a new file: `frontend/src/pages/StatusPage.jsx`. Use `useEffect` and `axios` to fetch the status from `[API_URL]/status`. Show a green badge "System Online" if successful, or a red badge "System Offline" if it fails.
+
+#### Step 3: Configure Routing
+Register the `/status` route in `frontend/src/App.jsx`. Add a public link to the status page in your footer layout component.
+
+#### Step 4: Deploy and Verify
+Commit your changes and push them to GitHub. Wait for Render and Vercel to auto-deploy the updates. Open the status page on your live Vercel URL and check that it successfully queries the live database connectivity status from the Render backend.
+
+---
+
+### 💻 Example Code Structure
+
+Here is a template to guide your implementation:
+
+```javascript
+// Within backend/server.js
+import mongoose from 'mongoose';
+
+app.get('/api/status', (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const states = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+  };
+
+  res.json({
+    status: 'ok',
+    database: states[dbState] || 'unknown',
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date()
+  });
+});
+```
+
+```jsx
+// File: frontend/src/pages/StatusPage.jsx
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+import Badge from '../components/ui/Badge';
+import Card from '../components/ui/Card';
+
+function StatusPage() {
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/status`);
+        setStatus(response.data);
+      } catch (err) {
+        console.error('Failed to retrieve system status:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStatus();
+  }, []);
+
+  return (
+    <div className="app-container">
+      <Navbar />
+      <main className="status-main">
+        <Card className="status-card">
+          <h1>System Status 🖥️</h1>
+          {loading ? (
+            <p>Checking system status...</p>
+          ) : status ? (
+            <div className="status-details">
+              <p>API Status: <Badge variant="success">Online</Badge></p>
+              <p>Database: <Badge variant={status.database === 'connected' ? 'success' : 'danger'}>{status.database}</Badge></p>
+              <p>Uptime: <strong>{status.uptime} seconds</strong></p>
+            </div>
+          ) : (
+            <div>
+              <p>API Status: <Badge variant="danger">Offline</Badge></p>
+              <p>Database connection unavailable.</p>
+            </div>
+          )}
+        </Card>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default StatusPage;
+```

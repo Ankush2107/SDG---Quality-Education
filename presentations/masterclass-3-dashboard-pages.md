@@ -1028,3 +1028,131 @@ ROUTING:
 ```
 
 > 💡 **Golden Rule for MC3:** Always build **components before pages that use them**. LessonModal and QuizModal must exist before RoadmapPage because RoadmapPage imports and renders them. After all pages are built, `App.jsx` is always updated last.
+
+---
+
+## 📌 Slide 15 — Practical Assignment: Build a Study Goal Tracker
+
+### 🎯 The Goal
+Your assignment is to build a **Study Goal Tracker** inside the `DashboardPage`. Students will be able to click a button, open a modal (reusing the custom `Modal` and `Button` components built in MC2), add a study goal (e.g., "Complete 2 lessons today"), and see their goals listed on the dashboard as a checklist.
+
+### 📚 Concepts You Will Practice
+1. **Component Reuse:** Utilize the reusable custom `Modal`, `Button`, and `Card` components you built in Masterclass 2.
+2. **State Arrays:** Manage a dynamic list of items (`goals`) in React state.
+3. **Immutable Updates:** Append new goals to the state array and toggle/remove goals immutably using the spread operator (`...`) and `.filter()` or `.map()`.
+4. **Conditional Rendering:** Render different states for empty lists vs. populated lists.
+
+---
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Open the Dashboard Page
+Edit `frontend/src/pages/DashboardPage.jsx`.
+
+#### Step 2: Set Up Goals State
+Create a new state variable: `const [goals, setGoals] = useState([]);` and another boolean state `isModalOpen` to toggle the modal's visibility.
+
+#### Step 3: Integrate the Reusable Modal
+Import the custom `Modal` component and add it to your return JSX. Wire `isOpen={isModalOpen}` and `onClose={() => setIsModalOpen(false)}`.
+
+#### Step 4: Implement Add Goal Logic
+Inside the modal, add a form with a text input. Write a function `handleAddGoal(text)` that appends a new goal object to the `goals` state:
+`{ id: Date.now(), text, completed: false }`
+
+#### Step 5: Render the Checklist
+On the dashboard layout, render a list of the current goals. Each item should have a checkbox to toggle completion and a delete button. If the goals array is empty, render the `<EmptyState>` component with a message: "No goals set for this week."
+
+---
+
+### 💻 Example Code Structure
+
+Here is a partial skeleton to guide your implementation:
+
+```jsx
+// Within frontend/src/pages/DashboardPage.jsx
+import { useState } from 'react';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
+import EmptyState from '../components/ui/EmptyState';
+
+// Inside DashboardPage component:
+const [goals, setGoals] = useState([
+  { id: 1, text: 'Complete Masterclass 3 assignment', completed: false }
+]);
+const [isModalOpen, setIsModalOpen] = useState(false);
+const [newGoalText, setNewGoalText] = useState('');
+
+const handleAddGoal = (e) => {
+  e.preventDefault();
+  if (!newGoalText.trim()) return;
+
+  const newGoal = {
+    id: Date.now(),
+    text: newGoalText,
+    completed: false
+  };
+
+  // Immutably append to state array
+  setGoals([...goals, newGoal]);
+  setNewGoalText('');
+  setIsModalOpen(false);
+};
+
+const toggleGoal = (id) => {
+  setGoals(goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g));
+};
+
+const deleteGoal = (id) => {
+  setGoals(goals.filter(g => g.id !== id));
+};
+
+// Inside the returned JSX:
+return (
+  <div className="dashboard-content">
+    {/* ... other dashboard widgets ... */}
+    
+    <Card className="goals-card">
+      <div className="card-header">
+        <h2>🎯 Weekly Study Goals</h2>
+        <Button onClick={() => setIsModalOpen(true)}>Add Goal</Button>
+      </div>
+
+      {goals.length === 0 ? (
+        <EmptyState title="No Goals Set" description="Add your first study goal to stay on track!" />
+      ) : (
+        <ul className="goals-list">
+          {goals.map(goal => (
+            <li key={goal.id} className={goal.completed ? 'goal--completed' : ''}>
+              <input 
+                type="checkbox" 
+                checked={goal.completed} 
+                onChange={() => toggleGoal(goal.id)} 
+              />
+              <span>{goal.text}</span>
+              <button className="btn-delete" onClick={() => deleteGoal(goal.id)}>✕</button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+
+    {/* Custom reusable modal */}
+    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Set New Study Goal">
+      <form onSubmit={handleAddGoal}>
+        <input 
+          type="text" 
+          placeholder="e.g. Learn useEffect hooks" 
+          value={newGoalText}
+          onChange={(e) => setNewGoalText(e.target.value)}
+          className="modal-input"
+        />
+        <div className="modal-actions">
+          <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+          <Button type="submit">Add Goal</Button>
+        </div>
+      </form>
+    </Modal>
+  </div>
+);
+```

@@ -1210,3 +1210,128 @@ UPDATE CONTROLLERS (stubs → real code):
 ```
 
 > 💡 **Golden Rule for MC5:** Models come FIRST because everything depends on them. Think of models as the database "blueprint" — you can't query data without a schema that defines what the data looks like. Build `User.js` before any other model, since all other models reference it via ObjectId.
+
+---
+
+## 📌 Slide 18 — Practical Assignment: Build a Saved Projects Database Layer
+
+### 🎯 The Goal
+Your assignment is to implement a new database-backed feature on the backend: a **Bookmark/Saved Resource System**. Currently, resources are loaded platform-wide, but students cannot bookmark them. You will create a Mongoose schema and Express controllers/routes to save, retrieve, and delete a user's bookmarked resources.
+
+### 📚 Concepts You Will Practice
+1. **Schema Design:** Define a Mongoose schema (`Bookmark.js`) that references the `User` model using ObjectIds.
+2. **MongoDB CRUD:** Use Mongoose methods like `.create()`, `.find()`, and `.findOneAndDelete()` to manipulate database documents.
+3. **Route Protection:** Wire up Express router routes and guard them with the `protect` authentication middleware so only logged-in users can manage bookmarks.
+
+---
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Design the Model
+Create a new file: `backend/models/Bookmark.js`. Define a schema with:
+- `user`: ObjectId referencing `'User'` (required).
+- `resourceId`: ObjectId referencing `'Resource'` (required).
+- `title`: String (required).
+- `url`: String (required).
+- Timestamps enabled.
+
+#### Step 2: Implement Controller Functions
+Create a new controller: `backend/controllers/bookmarkController.js` containing:
+- `addBookmark`: Saves a new bookmark document linked to `req.user._id`.
+- `getMyBookmarks`: Fetches all bookmark documents matching `{ user: req.user._id }`.
+- `removeBookmark`: Deletes a bookmark document by its ID, ensuring it belongs to `req.user._id`.
+
+#### Step 3: Set Up Routes
+Create `backend/routes/bookmarkRoutes.js`. Define endpoints:
+- `GET /` calls `getMyBookmarks`
+- `POST /` calls `addBookmark`
+- `DELETE /:id` calls `removeBookmark`
+Wrap all routes in the `protect` middleware.
+
+#### Step 4: Register the Route in server.js
+Import the new router in `backend/server.js` and mount it at `app.use('/api/bookmarks', bookmarkRoutes)`. Test the API endpoints using Postman.
+
+---
+
+### 💻 Example Code Structure
+
+Here is a template to guide your implementation:
+
+```javascript
+// File: backend/models/Bookmark.js
+import mongoose from 'mongoose';
+
+const bookmarkSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  resourceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Resource',
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  url: {
+    type: String,
+    required: true
+  }
+}, { timestamps: true });
+
+export default mongoose.model('Bookmark', bookmarkSchema);
+```
+
+```javascript
+// File: backend/controllers/bookmarkController.js
+import Bookmark from '../models/Bookmark.js';
+
+// @desc    Get user bookmarks
+// @route   GET /api/bookmarks
+// @access  Private
+export const getMyBookmarks = async (req, res) => {
+  const bookmarks = await Bookmark.find({ user: req.user._id });
+  res.json(bookmarks);
+};
+
+// @desc    Add a bookmark
+// @route   POST /api/bookmarks
+// @access  Private
+export const addBookmark = async (req, res) => {
+  const { resourceId, title, url } = req.body;
+
+  // Check if already bookmarked
+  const exists = await Bookmark.findOne({ user: req.user._id, resourceId });
+  if (exists) {
+    res.status(400);
+    throw new Error('Resource already bookmarked');
+  }
+
+  const bookmark = await Bookmark.create({
+    user: req.user._id,
+    resourceId,
+    title,
+    url
+  });
+
+  res.status(201).json(bookmark);
+};
+
+// @desc    Delete a bookmark
+// @route   DELETE /api/bookmarks/:id
+// @access  Private
+export const removeBookmark = async (req, res) => {
+  const bookmark = await Bookmark.findOne({ _id: req.params.id, user: req.user._id });
+  
+  if (!bookmark) {
+    res.status(404);
+    throw new Error('Bookmark not found or unauthorized');
+  }
+
+  await bookmark.deleteOne();
+  res.json({ message: 'Bookmark removed successfully' });
+};
+```
