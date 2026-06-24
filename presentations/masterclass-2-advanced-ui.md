@@ -762,106 +762,862 @@ D) Only when the user manually calls `toggleTheme()`
 
 ## 📋 File Creation Flow — MC2 (Start Here, Follow This Order!)
 
-> **How to use this:** You already have all the MC1 files. Now add these MC2 files in this exact order. Each group depends on the group above it.
+This section provides a clear, step-by-step walkthrough of the files you need to create, modify, or update during Masterclass 2. Click on the file name links to open the files directly on your screen.
 
 ---
 
 ### 🟢 STEP 1 — Design System (FIRST — every component style depends on it)
 
-| Order | File | Why First? |
-|-------|------|------------|
-| 1️⃣ | `frontend/src/index.css` | All CSS variables, animations, base styles — nothing can be styled correctly without this |
+#### 1️⃣ File: [frontend/src/index.css](file:///e:/SDG-Quality-Education/frontend/src/index.css)
+- **Action:** Open and replace its contents.
+- **Instructor Note:** Explain that `index.css` acts as our design token library (storing CSS variables for HSL colors, dark/light theme definitions, font scales, spacing systems, and custom transitions).
+- **Code to Write:** Instruct students to copy the complete production CSS from the main workspace file [index.css](file:///e:/SDG-Quality-Education/frontend/src/index.css) to ensure they have the full design system ready.
 
 ---
 
 ### 🟡 STEP 2 — Context Providers (Global state — must exist before anything reads them)
 
-| Order | File | Why at This Stage? |
-|-------|------|--------------------|
-| 2️⃣ | `frontend/src/context/ThemeContext.jsx` | Global theme state — `ThemeToggle`, `Sidebar`, and `Navbar` all use `useTheme()` |
-| 3️⃣ | `frontend/src/context/AuthContext.jsx` | Global user state — `ProtectedRoute`, `AdminRoute`, `Sidebar` all use `useAuth()` |
+#### 2️⃣ File: [frontend/src/context/ThemeContext.jsx](file:///e:/SDG-Quality-Education/frontend/src/context/ThemeContext.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Explain that React Context solves "prop drilling". We store the current theme (light or dark) globally. We use `useEffect` to sync the state variable with `localStorage` and toggle the `data-theme` attribute on the root HTML element.
+- **Code to Write:**
+```jsx
+import { createContext, useContext, useEffect, useState } from 'react';
 
----
+const ThemeContext = createContext();
 
-### 🟠 STEP 3 — UI Component Library (Smallest pieces first — pages and layouts need them)
+export const ThemeProvider = ({ children }) => {
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('skillpath_theme');
+    if (savedTheme) return savedTheme;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  });
 
-| Order | File | Why at This Stage? |
-|-------|------|--------------------|
-| 4️⃣ | `frontend/src/components/ui/Spinner.jsx` | Used INSIDE `Button` — must exist before Button |
-| 5️⃣ | `frontend/src/components/ui/Button.jsx` | Most-used component — everything else may need it |
-| 6️⃣ | `frontend/src/components/ui/Badge.jsx` | Used in Sidebar and pages |
-| 7️⃣ | `frontend/src/components/ui/Card.jsx` | Used in Dashboard and pages |
-| 8️⃣ | `frontend/src/components/ui/InputField.jsx` | Used in forms and onboarding |
-| 9️⃣ | `frontend/src/components/ui/Modal.jsx` | Used by LessonModal + QuizModal later |
-| 🔟 | `frontend/src/components/ui/EmptyState.jsx` | Used when no data exists |
-| 1️⃣1️⃣ | `frontend/src/components/ui/ProgressBar.jsx` | Used in Dashboard |
-| 1️⃣2️⃣ | `frontend/src/components/ui/ProgressRing.jsx` | Used in Dashboard |
-| 1️⃣3️⃣ | `frontend/src/components/ui/Avatar.jsx` | Used in Sidebar + Profile |
-| 1️⃣4️⃣ | `frontend/src/components/ui/SearchBar.jsx` | Used in Resources page |
-| 1️⃣5️⃣ | `frontend/src/components/ui/FilterBar.jsx` | Used in Resources page |
-| 1️⃣6️⃣ | `frontend/src/components/ui/ThemeToggle.jsx` | Uses `useTheme()` — Context must exist (done) |
+  useEffect(() => {
+    localStorage.setItem('skillpath_theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
----
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
-### 🔵 STEP 4 — Route Guards (Must exist before pages are added to App.jsx)
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
 
-| Order | File | Why at This Stage? |
-|-------|------|--------------------|
-| 1️⃣7️⃣ | `frontend/src/routes/ProtectedRoute.jsx` | Reads `AuthContext` — guards all logged-in pages |
-| 1️⃣8️⃣ | `frontend/src/routes/AdminRoute.jsx` | Reads `AuthContext` — guards admin-only pages |
-
----
-
-### 🟣 STEP 5 — Dashboard Shell (Build the container before pages that go inside it)
-
-| Order | File | Why at This Stage? |
-|-------|------|--------------------|
-| 1️⃣9️⃣ | `frontend/src/components/layout/Sidebar.jsx` | Uses `AuthContext`, `ThemeContext`, `Avatar`, `ThemeToggle`, `NavLink` — all done above |
-| 2️⃣0️⃣ | `frontend/src/components/layout/DashboardLayout.jsx` | Wraps Sidebar + `{children}` — used by every logged-in page |
-
----
-
-### 🔴 STEP 6 — Onboarding Page
-
-| Order | File | Why at This Stage? |
-|-------|------|--------------------|
-| 2️⃣1️⃣ | `frontend/src/pages/OnboardingPage.jsx` | 3-step wizard — uses Button, InputField (done above) |
-
----
-
-### ⚫ STEP 7 — Update App.jsx
-
-| Order | File | What to Add |
-|-------|------|-------------|
-| 2️⃣2️⃣ | `frontend/src/App.jsx` (update) | Wrap ThemeProvider + AuthProvider around everything; add `/onboarding` route with ProtectedRoute |
-
----
-
-### ✅ MC2 Creation Order — Quick Visual Summary
-
-```
-1.  index.css              ← Design system — ALWAYS FIRST
-2.  ThemeContext.jsx        ← Global theme state
-3.  AuthContext.jsx         ← Global user/auth state
-4.  Spinner.jsx             ← Atomic UI (used inside Button)
-5.  Button.jsx              ← Core UI component
-6.  Badge.jsx               ← Core UI component
-7.  Card.jsx                ← Core UI component
-8.  InputField.jsx          ← Core UI component
-9.  Modal.jsx               ← Core UI component
-10. EmptyState.jsx          ← Core UI component
-11. ProgressBar.jsx         ← Core UI component
-12. ProgressRing.jsx        ← Core UI component
-13. Avatar.jsx              ← Core UI component
-14. SearchBar.jsx           ← Core UI component
-15. FilterBar.jsx           ← Core UI component
-16. ThemeToggle.jsx         ← Uses ThemeContext
-17. ProtectedRoute.jsx      ← Uses AuthContext
-18. AdminRoute.jsx          ← Uses AuthContext
-19. Sidebar.jsx             ← Uses both Contexts + Avatar + ThemeToggle
-20. DashboardLayout.jsx     ← Wraps Sidebar + children
-21. OnboardingPage.jsx      ← First logged-in page
-22. App.jsx (update)        ← Wrap providers + add routes — LAST
+export const useTheme = () => useContext(ThemeContext);
 ```
 
-> 💡 **Golden Rule for MC2:** Build **design tokens → contexts → atoms → molecules → layouts → pages** in that order. Never build a page before its building blocks exist. The design system (index.css) is always first — nothing can be styled correctly without it.
+#### 3️⃣ File: [frontend/src/context/AuthContext.jsx](file:///e:/SDG-Quality-Education/frontend/src/context/AuthContext.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** In this UI stage (before we build the real backend API in MC4), we mock the user authentication states so that routing guards and pages can read session states. We simulate login, registration, and logout actions using `localStorage`.
+- **Code to Write:**
+```jsx
+import { createContext, useContext, useState, useEffect } from 'react';
+
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('skillpath_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setIsLoading(false);
+  }, []);
+
+  const login = (email, password) => {
+    const mockUser = { name: 'Demo Student', email, role: 'student', streak: 3 };
+    setUser(mockUser);
+    localStorage.setItem('skillpath_user', JSON.stringify(mockUser));
+    return mockUser;
+  };
+
+  const register = (name, email, password) => {
+    const mockUser = { name, email, role: 'student', streak: 1 };
+    setUser(mockUser);
+    localStorage.setItem('skillpath_user', JSON.stringify(mockUser));
+    return mockUser;
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('skillpath_user');
+  };
+
+  const updateUser = (updatedData) => {
+    setUser(prev => {
+      const next = { ...prev, ...updatedData };
+      localStorage.setItem('skillpath_user', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);
+export default AuthContext;
+```
+
+---
+
+### 🟠 STEP 3 — UI Component Library (Atomic components needed by layouts and pages)
+
+#### 4️⃣ File: [frontend/src/components/ui/Spinner.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/Spinner.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** A small circular spinner. It reads `var(--color-primary)` CSS variable for custom colors.
+- **Code to Write:**
+```jsx
+const Spinner = ({ size = 24, color }) => (
+  <div
+    className="spinner"
+    style={{
+      width: size,
+      height: size,
+      borderTopColor: color || 'var(--color-primary)',
+    }}
+  />
+)
+
+export default Spinner;
+```
+
+#### 5️⃣ File: [frontend/src/components/ui/Button.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/Button.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Reusable button component. Features style variants, sizes, and a built-in disabled state when loading.
+- **Code to Write:**
+```jsx
+import Spinner from './Spinner';
+
+const Button = ({
+  children,
+  variant = 'primary',
+  size = 'md',
+  onClick,
+  disabled = false,
+  isLoading = false,
+  type = 'button',
+  className = '',
+}) => (
+  <button
+    type={type}
+    className={`btn btn--${variant} btn--${size} ${className}`}
+    onClick={onClick}
+    disabled={disabled || isLoading}
+  >
+    {isLoading ? <Spinner size={16} /> : children}
+  </button>
+)
+
+export default Button;
+```
+
+#### 6️⃣ File: [frontend/src/components/ui/Badge.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/Badge.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Small text bubble for tags, status indicators, and lesson levels.
+- **Code to Write:**
+```jsx
+const Badge = ({ children, variant = 'neutral', icon }) => (
+  <span className={`badge badge--${variant}`}>
+    {icon && <span>{icon}</span>}
+    {children}
+  </span>
+)
+
+export default Badge;
+```
+
+#### 7️⃣ File: [frontend/src/components/ui/Card.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/Card.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Content container component. Features classes for hover state transforms and glassmorphism.
+- **Code to Write:**
+```jsx
+const Card = ({ children, className = '', hover = false, glass = false, style = {} }) => (
+  <div
+    className={`card ${hover ? 'card--hover' : ''} ${glass ? 'card--glass' : ''} ${className}`}
+    style={style}
+  >
+    {children}
+  </div>
+)
+
+export default Card;
+```
+
+#### 8️⃣ File: [frontend/src/components/ui/InputField.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/InputField.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Groups labels, inputs, and validation error messages in a single styled block.
+- **Code to Write:**
+```jsx
+const InputField = ({
+  label, id, type = 'text', value, onChange,
+  placeholder, error, required = false, autoComplete
+}) => (
+  <div className="input-group">
+    {label && (
+      <label htmlFor={id} className="input-label">
+        {label} {required && <span style={{ color: 'var(--color-error)' }}>*</span>}
+      </label>
+    )}
+    <input
+      id={id}
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      required={required}
+      autoComplete={autoComplete}
+      className={`input-field ${error ? 'input-field--error' : ''}`}
+    />
+    {error && <span className="input-error-msg">{error}</span>}
+  </div>
+)
+
+export default InputField;
+```
+
+#### 9️⃣ File: [frontend/src/components/ui/Modal.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/Modal.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Standard overlay dialog. When open, it prevents page-background scroll by setting `overflow: hidden` on `document.body` via a `useEffect` cleaner.
+- **Code to Write:**
+```jsx
+import { useEffect } from 'react';
+import { FiX } from 'react-icons/fi';
+
+const Modal = ({ isOpen, onClose, title, children, maxWidth = 520 }) => {
+  useEffect(() => {
+    if (isOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3 className="modal-title">{title}</h3>
+          <button className="modal-close" onClick={onClose}><FiX /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+export default Modal;
+```
+
+#### 🔟 File: [frontend/src/components/ui/EmptyState.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/EmptyState.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** A fallback display component to present when dynamic arrays (goals, search findings, projects) have zero items.
+- **Code to Write:**
+```jsx
+import Button from './Button';
+
+const EmptyState = ({ icon = '📭', title, text, action, actionLabel }) => (
+  <div className="empty-state">
+    <div className="empty-state__icon">{icon}</div>
+    <h3 className="empty-state__title">{title}</h3>
+    {text && <p className="empty-state__text">{text}</p>}
+    {action && <Button onClick={action} variant="primary">{actionLabel}</Button>}
+  </div>
+)
+
+export default EmptyState;
+```
+
+#### 1️⃣1️⃣ File: [frontend/src/components/ui/ProgressBar.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/ProgressBar.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** A horizontal completion bar with active indicator values.
+- **Code to Write:**
+```jsx
+const ProgressBar = ({ value = 0, height = 8, showLabel = false, color }) => (
+  <div>
+    {showLabel && (
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 'var(--text-sm)', fontWeight: 600 }}>
+        <span>Progress</span>
+        <span style={{ color: 'var(--color-accent)' }}>{Math.round(value)}%</span>
+      </div>
+    )}
+    <div className="progress-bar-wrap" style={{ height }}>
+      <div
+        className="progress-bar-fill"
+        style={{ width: `${Math.min(value, 100)}%`, height: '100%', background: color }}
+      />
+    </div>
+  </div>
+)
+
+export default ProgressBar;
+```
+
+#### 1️⃣2️⃣ File: [frontend/src/components/ui/ProgressRing.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/ProgressRing.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** A SVG-based circular progress tracker. Explain how we calculate the `strokeDashoffset` dynamically based on the circle's circumference formula ($2 \pi r$) and the input percentage value.
+- **Code to Write:**
+```jsx
+const ProgressRing = ({ value = 0, size = 120, strokeWidth = 10 }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (value / 100) * circumference;
+
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none"
+          stroke="var(--color-bg-elevated)" strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none"
+          stroke="var(--color-accent)" strokeWidth={strokeWidth}
+          strokeDasharray={circumference} strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 1s ease', filter: 'drop-shadow(0 0 8px var(--color-accent))' }}
+        />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center'
+      }}>
+        <span style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, lineHeight: 1 }}>{Math.round(value)}%</span>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 2 }}>complete</span>
+      </div>
+    </div>
+  );
+};
+
+export default ProgressRing;
+```
+
+#### 1️⃣3️⃣ File: [frontend/src/components/ui/Avatar.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/Avatar.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Creates a visual user representation. If no image URL is provided, it extracts name initials and applies a color dynamically.
+- **Code to Write:**
+```jsx
+const Avatar = ({ name = '', size = 40, src }) => {
+  // Simple helper to get name initials
+  const initials = name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  const colors = ['#6C63FF', '#00D4AA', '#F59E0B', '#EF4444', '#3B82F6'];
+  const color = colors[name.charCodeAt(0) % colors.length] || colors[0];
+
+  if (src) return (
+    <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover' }} />
+  );
+
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: `${color}33`, border: `2px solid ${color}66`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.35, fontWeight: 700, color, flexShrink: 0,
+    }}>
+      {initials || '?'}
+    </div>
+  );
+};
+
+export default Avatar;
+```
+
+#### 1️⃣4️⃣ File: [frontend/src/components/ui/SearchBar.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/SearchBar.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** A text search component pre-packaged with an absolute-positioned search icon inside.
+- **Code to Write:**
+```jsx
+import { FiSearch } from 'react-icons/fi';
+
+const SearchBar = ({ value, onChange, placeholder = 'Search...' }) => (
+  <div style={{ position: 'relative' }}>
+    <FiSearch style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+    <input
+      type="text"
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className="input-field"
+      style={{ paddingLeft: 40 }}
+    />
+  </div>
+)
+
+export default SearchBar;
+```
+
+#### 1️⃣5️⃣ File: [frontend/src/components/ui/FilterBar.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/FilterBar.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Displays inline category pill buttons. Triggers status filters when clicked.
+- **Code to Write:**
+```jsx
+const FilterBar = ({ options, active, onChange }) => (
+  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+    {options.map(opt => (
+      <button
+        key={opt.value}
+        onClick={() => onChange(opt.value)}
+        style={{
+          padding: '6px 16px',
+          borderRadius: 'var(--radius-full)',
+          border: '1px solid',
+          borderColor: active === opt.value ? 'var(--color-primary)' : 'var(--color-border)',
+          background: active === opt.value ? 'var(--color-primary-glow)' : 'transparent',
+          color: active === opt.value ? 'var(--color-primary-light)' : 'var(--color-text-secondary)',
+          fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer',
+          transition: 'var(--transition)',
+          fontFamily: 'inherit',
+        }}
+      >
+        {opt.label}
+      </button>
+    ))}
+  </div>
+)
+
+export default FilterBar;
+```
+
+#### 1️⃣6️⃣ File: [frontend/src/components/ui/ThemeToggle.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/ui/ThemeToggle.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Custom button toggling the UI theme using the global context hook we built in Step 2.
+- **Code to Write:**
+```jsx
+import { FiSun, FiMoon } from 'react-icons/fi';
+import { useTheme } from '../../context/ThemeContext';
+
+const ThemeToggle = () => {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="theme-toggle"
+      aria-label="Toggle theme"
+      title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+    >
+      {theme === 'light' ? <FiMoon size={20} /> : <FiSun size={20} />}
+    </button>
+  );
+};
+
+export default ThemeToggle;
+```
+
+---
+
+### 🔵 STEP 4 — Route Guards (Protect pages from anonymous users)
+
+#### 1️⃣7️⃣ File: [frontend/src/routes/ProtectedRoute.jsx](file:///e:/SDG-Quality-Education/frontend/src/routes/ProtectedRoute.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** A layout guard wrapper. Reads the user profile status from `AuthContext` to determine if a student is logged in. If not, it forces a path redirection to `/login` using the router `<Navigate>` tag.
+- **Code to Write:**
+```jsx
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+const ProtectedRoute = ({ children }) => {
+  const { user } = useAuth();
+  return user ? children : <Navigate to="/login" replace />;
+}
+
+export default ProtectedRoute;
+```
+
+#### 1️⃣8️⃣ File: [frontend/src/routes/AdminRoute.jsx](file:///e:/SDG-Quality-Education/frontend/src/routes/AdminRoute.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** A high-level layout guard wrapper. Restricts access to admin dashboard paths. Checks if user is logged in and owns the `'admin'` role, otherwise redirects back to the standard student dashboard.
+- **Code to Write:**
+```jsx
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+const AdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
+export default AdminRoute;
+```
+
+---
+
+### 🟣 STEP 5 — Dashboard Layout & Shell
+
+#### 1️⃣9️⃣ File: [frontend/src/components/layout/Sidebar.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/layout/Sidebar.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Build a vertical panel showing navigation pages. Uses `NavLink` to automatically color active tabs. Displays user details, theme toggles, and restricts admin tools to admin roles.
+- **Code to Write:**
+```jsx
+import { NavLink, useNavigate } from 'react-router-dom';
+import { FiZap, FiHome, FiMap, FiMessageSquare, FiFolder, FiBookOpen, FiUser, FiLogOut, FiShield, FiDatabase, FiUsers } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
+import Avatar from '../ui/Avatar';
+import ThemeToggle from '../ui/ThemeToggle';
+
+const navLinks = [
+  { to: '/dashboard', icon: <FiHome />, label: 'Dashboard' },
+  { to: '/roadmap', icon: <FiMap />, label: 'My Roadmap' },
+  { to: '/chat', icon: <FiMessageSquare />, label: 'AI Chat' },
+  { to: '/projects', icon: <FiFolder />, label: 'Project Ideas' },
+  { to: '/resources', icon: <FiBookOpen />, label: 'Resources' },
+  { to: '/profile', icon: <FiUser />, label: 'Profile' },
+];
+
+const adminLinks = [
+  { to: '/admin', icon: <FiShield />, label: 'Admin Dashboard' },
+  { to: '/admin/resources', icon: <FiDatabase />, label: 'Resources' },
+  { to: '/admin/users', icon: <FiUsers />, label: 'Users' },
+];
+
+const Sidebar = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  return (
+    <aside className="sidebar">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-8)' }}>
+        <NavLink to="/" className="sidebar__logo" style={{ marginBottom: 0 }}>
+          <FiZap className="sidebar__logo-icon" />
+          <span>SkillPath <span className="gradient-text">AI</span></span>
+        </NavLink>
+        <ThemeToggle />
+      </div>
+
+      <nav className="sidebar__nav">
+        <span className="sidebar__section-label">Navigation</span>
+        {navLinks.map(({ to, icon, label }) => (
+          <NavLink key={to} to={to} className={({ isActive }) => `sidebar__link ${isActive ? 'active' : ''}`}>
+            {icon} {label}
+          </NavLink>
+        ))}
+
+        {user?.role === 'admin' && (
+          <>
+            <span className="sidebar__section-label">Admin</span>
+            {adminLinks.map(({ to, icon, label }) => (
+              <NavLink key={to} to={to} end className={({ isActive }) => `sidebar__link ${isActive ? 'active' : ''}`}>
+                {icon} {label}
+              </NavLink>
+            ))}
+          </>
+        )}
+      </nav>
+
+      <div className="sidebar__footer">
+        <div className="sidebar__user">
+          <Avatar name={user?.name} size={36} />
+          <div>
+            <div className="sidebar__user-name">{user?.name}</div>
+            <div className="sidebar__user-role">{user?.role}</div>
+          </div>
+        </div>
+        <button onClick={handleLogout} className="sidebar__link" style={{ width: '100%', marginTop: 8, background: 'none', border: 'none', color: 'var(--color-error)', cursor: 'pointer', textAlign: 'left' }}>
+          <FiLogOut /> Logout
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+export default Sidebar;
+```
+
+#### 2️⃣0️⃣ File: [frontend/src/components/layout/DashboardLayout.jsx](file:///e:/SDG-Quality-Education/frontend/src/components/layout/DashboardLayout.jsx)
+- **Action:** Create this new file.
+- **Instructor Note:** Grid shell dividing the side bar panel from the main page widgets. Wraps every page inside our logged-in route paths.
+- **Code to Write:**
+```jsx
+import Sidebar from './Sidebar';
+
+const DashboardLayout = ({ children }) => (
+  <div className="dashboard-layout">
+    <Sidebar />
+    <main className="dashboard-main">
+      {children}
+    </main>
+  </div>
+)
+
+export default DashboardLayout;
+```
+
+---
+
+### 🔴 STEP 6 — Onboarding Page & App Providers Setup
+
+#### 2️⃣1️⃣ File: [frontend/src/pages/OnboardingPage.jsx](file:///e:/SDG-Quality-Education/frontend/src/pages/OnboardingPage.jsx)
+- **Action:** Create this new page.
+- **Instructor Note:** A three-step onboarding form. Explain how we manage multi-step states with a local integer index (`step`). It updates the user's mock account profile variables with their learning path objectives, experience level, and study schedules.
+- **Code to Write:**
+```jsx
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FiZap, FiArrowRight, FiArrowLeft } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import Button from '../components/ui/Button';
+
+const goals = ['Web Development', 'Data Science', 'Machine Learning', 'Mobile Development', 'DevOps & Cloud', 'UI/UX Design', 'Cybersecurity', 'Blockchain'];
+const levels = [
+  { value: 'beginner', label: 'Beginner', desc: 'Just starting out — little to no experience', emoji: '🌱' },
+  { value: 'intermediate', label: 'Intermediate', desc: 'Have some basics — want to go deeper', emoji: '🚀' },
+  { value: 'advanced', label: 'Advanced', desc: 'Solid foundation — want to master advanced topics', emoji: '⚡' },
+];
+const timeOptions = [
+  { value: 2, label: '2 hrs/week', desc: 'Casual pace — slow and steady', emoji: '☕' },
+  { value: 5, label: '5 hrs/week', desc: 'Moderate pace — balanced approach', emoji: '📚' },
+  { value: 10, label: '10+ hrs/week', desc: 'Intensive — fast-track your learning', emoji: '🔥' },
+];
+
+const StepIndicator = ({ current, total }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 'var(--space-8)' }}>
+    {Array.from({ length: total }).map((_, i) => (
+      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          background: i < current ? 'var(--color-primary)' : i === current ? 'var(--color-primary-glow)' : 'var(--color-bg-elevated)',
+          border: `2px solid ${i <= current ? 'var(--color-primary)' : 'var(--color-border)'}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 'var(--text-sm)', fontWeight: 700,
+          color: i < current ? '#fff' : i === current ? 'var(--color-primary-light)' : 'var(--color-text-muted)',
+          transition: 'var(--transition)',
+        }}>
+          {i < current ? '✓' : i + 1}
+        </div>
+        {i < total - 1 && <div style={{ width: 40, height: 2, background: i < current ? 'var(--color-primary)' : 'var(--color-border)', transition: 'var(--transition)' }} />}
+      </div>
+    ))}
+  </div>
+);
+
+const OnboardingPage = () => {
+  const { updateUser } = useAuth();
+  const navigate = useNavigate();
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState({ learningGoal: '', currentLevel: '', weeklyHours: '' });
+
+  const isStepValid = () => {
+    if (step === 0) return !!form.learningGoal;
+    if (step === 1) return !!form.currentLevel;
+    if (step === 2) return !!form.weeklyHours;
+    return true;
+  };
+
+  const handleSubmit = () => {
+    updateUser({ ...form, hasOnboarded: true });
+    navigate('/dashboard');
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-6)' }}>
+      <div style={{ width: '100%', maxWidth: 640 }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
+            <FiZap style={{ color: 'var(--color-primary)' }} />
+            <span>SkillPath <span className="gradient-text">AI</span></span>
+          </div>
+          <h1 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-2)' }}>Let's Build Your Learning Path</h1>
+          <p style={{ color: 'var(--color-text-secondary)' }}>Answer 3 quick questions — our AI will create your personalized roadmap instantly.</p>
+        </div>
+
+        <div className="card" style={{ padding: 'var(--space-8)' }}>
+          <StepIndicator current={step} total={3} />
+
+          {step === 0 && (
+            <div>
+              <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-2)' }}>What do you want to learn?</h2>
+              <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>Choose your primary learning goal.</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-3)' }}>
+                {goals.map(goal => (
+                  <button key={goal} onClick={() => setForm({ ...form, learningGoal: goal })}
+                    style={{
+                      padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', textAlign: 'left',
+                      background: form.learningGoal === goal ? 'var(--color-primary-glow)' : 'var(--color-bg-elevated)',
+                      border: `1px solid ${form.learningGoal === goal ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                      color: form.learningGoal === goal ? 'var(--color-primary-light)' : 'var(--color-text)',
+                      fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
+                      transition: 'var(--transition)', fontFamily: 'inherit',
+                    }}>
+                    {goal}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div>
+              <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-2)' }}>What's your current level?</h2>
+              <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>Be honest — the AI will tailor your roadmap accordingly.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                {levels.map(({ value, label, desc, emoji }) => (
+                  <button key={value} onClick={() => setForm({ ...form, currentLevel: value })}
+                    style={{
+                      padding: 'var(--space-5)', borderRadius: 'var(--radius-md)', textAlign: 'left',
+                      background: form.currentLevel === value ? 'var(--color-primary-glow)' : 'var(--color-bg-elevated)',
+                      border: `1px solid ${form.currentLevel === value ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                      color: 'var(--color-text)', cursor: 'pointer', transition: 'var(--transition)',
+                      display: 'flex', alignItems: 'center', gap: 'var(--space-4)', fontFamily: 'inherit',
+                    }}>
+                    <span style={{ fontSize: '1.5rem' }}>{emoji}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 'var(--text-base)', color: form.currentLevel === value ? 'var(--color-primary-light)' : 'var(--color-text)' }}>{label}</div>
+                      <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{desc}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div>
+              <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-2)' }}>How much time can you dedicate?</h2>
+              <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>This helps us set realistic timelines in your roadmap.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                {timeOptions.map(({ value, label, desc, emoji }) => (
+                  <button key={value} onClick={() => setForm({ ...form, weeklyHours: value })}
+                    style={{
+                      padding: 'var(--space-5)', borderRadius: 'var(--radius-md)', textAlign: 'left',
+                      background: form.weeklyHours === value ? 'var(--color-primary-glow)' : 'var(--color-bg-elevated)',
+                      border: `1px solid ${form.weeklyHours === value ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                      color: 'var(--color-text)', cursor: 'pointer', transition: 'var(--transition)',
+                      display: 'flex', alignItems: 'center', gap: 'var(--space-4)', fontFamily: 'inherit',
+                    }}>
+                    <span style={{ fontSize: '1.5rem' }}>{emoji}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 'var(--text-base)', color: form.weeklyHours === value ? 'var(--color-primary-light)' : 'var(--color-text)' }}>{label}</div>
+                      <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{desc}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'var(--space-8)', gap: 'var(--space-3)' }}>
+            {step > 0 && <Button variant="secondary" onClick={() => setStep(step - 1)}><FiArrowLeft /> Back</Button>}
+            <div style={{ marginLeft: 'auto' }}>
+              {step < 2
+                ? <Button variant="primary" onClick={() => setStep(step + 1)} disabled={!isStepValid()}>Next <FiArrowRight /></Button>
+                : <Button variant="accent" onClick={handleSubmit} disabled={!isStepValid()}>✨ Generate My Roadmap</Button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OnboardingPage;
+```
+
+#### 2️⃣2️⃣ File: [frontend/src/App.jsx](file:///e:/SDG-Quality-Education/frontend/src/App.jsx) (Update Route Mapping)
+- **Action:** Open and update this file.
+- **Instructor Note:** Import context wrappers (`ThemeProvider` and `AuthProvider`) and wrap them around the application layout. Register the new `/onboarding` route protected by `ProtectedRoute`.
+- **Code to Write:**
+```jsx
+import { Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './routes/ProtectedRoute';
+
+import LandingPage from './pages/LandingPage';
+import AboutPage from './pages/AboutPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import OnboardingPage from './pages/OnboardingPage';
+import NotFoundPage from './pages/NotFoundPage';
+
+const App = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      
+      {/* Protected Routes */}
+      <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+      
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+};
+
+export default App;
+```
+*(Remember to update [frontend/src/main.jsx](file:///e:/SDG-Quality-Education/frontend/src/main.jsx) to wrap the root `<App />` component in the state providers):*
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
+import App from './App.jsx';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+```
+
+---
+
+### ✅ MC2 Creation Order Summary
+
+```
+1.  index.css              ← Design variables and global styles
+2.  ThemeContext.jsx        ← Shared UI theme state
+3.  AuthContext.jsx         ← Mocked session context provider
+4.  Spinner.jsx             ← Action loader element
+5.  Button.jsx              ← Reusable action button component
+6.  Badge.jsx               ← Categorization tag component
+7.  Card.jsx                ← Reusable visual container component
+8.  InputField.jsx          ← Reusable form text input
+9.  Modal.jsx               ← Reusable floating dialog overlay
+10. EmptyState.jsx          ← Reusable fallback zero-results state
+11. ProgressBar.jsx         ← Horizontal completion indicator
+12. ProgressRing.jsx        ← Circular progress ring vector (uses SVG)
+13. Avatar.jsx              ← Graphical representation / text initials
+14. SearchBar.jsx           ← Text input with search icon
+15. FilterBar.jsx           ← Category buttons listing bar
+16. ThemeToggle.jsx         ← Toggles site themes
+17. ProtectedRoute.jsx      ← Redirection guard for students
+18. AdminRoute.jsx          ← Redirection guard for admins
+19. Sidebar.jsx             ← Sidebar panel navigation layout
+20. DashboardLayout.jsx     ← Dashboard wrapper layout grid
+21. OnboardingPage.jsx      ← Onboarding steps questionnaire
+22. App.jsx (update)        ← Wires paths and wraps providers (LAST ALWAYS)
+```
+
